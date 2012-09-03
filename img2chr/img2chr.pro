@@ -1,3 +1,5 @@
 SOURCES += main.cpp \
-    mainwindow.cpp
-HEADERS += mainwindow.h
+    mainwindow.cpp \
+    editorwidget.cpp
+HEADERS += mainwindow.h \
+    editorwidget.h

@@ -6,9 +6,23 @@ namespace img2chr
 {
     MainWindow::MainWindow()
     {
-        setMinimumSize(QSize(320, 240));
-        setWindowTitle(tr("img2chr"));
-        statusBar()->showMessage(tr("img2chr"));
+        editor = new EditorWidget();
+        scrollArea = new QScrollArea();
+        scrollArea->setWidget(editor);
+        scrollArea->setWidgetResizable(true);
+        setCentralWidget(scrollArea);
+
+        setMinimumSize(QSize(320, 480));
+        //setWindowTitle(tr("img2chr"));
+        statusBar()->showMessage(tr("img2chr - by Overkill."), 2000);
+        statusBar()->setStyleSheet(
+            "QStatusBar {"
+            "   border-top: 1px solid #CCCCCC;"
+            "   background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #DADBDE, stop: 1 #F6F7FA);"
+            "   padding: 4px;"
+            "   color: #777777;"
+            "}"
+        );
 
 #ifdef Q_WS_WIN
         QKeySequence quitSequence(Qt::ALT + Qt::Key_F4);
@@ -45,11 +59,15 @@ namespace img2chr
         connect(clearRecentAction, SIGNAL(triggered()), this, SLOT(clearRecentFiles()));
         connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
         connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
+
+        QTimer::singleShot(0, this, SLOT(newFile()));
     }
 
     void MainWindow::newFile()
     {
-        qDebug("New file!\n");
+        editor = new EditorWidget();
+        scrollArea->setWidget(editor);
+        setCurrentFile(QString());
     }
 
     void MainWindow::openFile()
@@ -63,12 +81,12 @@ namespace img2chr
 
     void MainWindow::saveFile()
     {
-        qDebug("Save file!\n");
+        statusBar()->showMessage(tr("File saved."), 2000);
     }
 
     void MainWindow::saveFileAs()
     {
-        qDebug("Save file as!\n");
+        statusBar()->showMessage(tr("File saved."), 2000);
     }
 
     void MainWindow::openRecentFile()
@@ -101,6 +119,8 @@ namespace img2chr
 
     void MainWindow::readFile(const QString& filename)
     {
+        editor = new EditorWidget();
+        scrollArea->setWidget(editor);
         setCurrentFile(filename);
     }
 
@@ -110,18 +130,27 @@ namespace img2chr
 
     void MainWindow::setCurrentFile(const QString& filename)
     {
-        QSettings settings;
-        QStringList recentFiles(settings.value("recentFiles").toStringList());
-        recentFiles.removeAll(filename);
-        recentFiles.prepend(filename);
-        while(recentFiles.size() > MaxRecentCount)
+        setWindowModified(false);
+        if(filename.isEmpty())
         {
-            recentFiles.removeLast();
+            setWindowFilePath("untitled.chr");
         }
+        else
+        {
+            setWindowFilePath(filename);
 
-        settings.setValue("recentFiles", recentFiles);
-        updateRecentFiles();
+            QSettings settings;
+            QStringList recentFiles(settings.value("recentFiles").toStringList());
+            recentFiles.removeAll(filename);
+            recentFiles.prepend(filename);
+            while(recentFiles.size() > MaxRecentCount)
+            {
+                recentFiles.removeLast();
+            }
 
+            settings.setValue("recentFiles", recentFiles);
+            updateRecentFiles();
+        }
         currentFile = filename;
     }
 

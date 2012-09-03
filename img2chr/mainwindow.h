@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QtGui>
+#include "editorwidget.h"
 
 namespace img2chr
 {
@@ -42,7 +43,11 @@ namespace img2chr
             QAction* clearRecentAction;
             QAction* exitAction;
             QAction* aboutAction;
+
             QString currentFile;
+
+            QScrollArea* scrollArea;
+            EditorWidget* editor;
     };
 }
 
