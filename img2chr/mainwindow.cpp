@@ -7,13 +7,8 @@ namespace img2chr
     MainWindow::MainWindow()
     {
         editor = new EditorWidget();
-        scrollArea = new QScrollArea();
-        scrollArea->setWidget(editor);
-        scrollArea->setWidgetResizable(true);
-        setCentralWidget(scrollArea);
+        setCentralWidget(editor);
 
-        setMinimumSize(QSize(320, 480));
-        //setWindowTitle(tr("img2chr"));
         statusBar()->showMessage(tr("img2chr - by Overkill."), 2000);
         statusBar()->setStyleSheet(
             "QStatusBar {"
@@ -65,8 +60,9 @@ namespace img2chr
 
     void MainWindow::newFile()
     {
+        delete editor;
         editor = new EditorWidget();
-        scrollArea->setWidget(editor);
+        setCentralWidget(editor);
         setCurrentFile(QString());
     }
 
@@ -119,8 +115,9 @@ namespace img2chr
 
     void MainWindow::readFile(const QString& filename)
     {
+        delete editor;
         editor = new EditorWidget();
-        scrollArea->setWidget(editor);
+        setCentralWidget(editor);
         setCurrentFile(filename);
     }
 

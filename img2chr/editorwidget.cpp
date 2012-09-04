@@ -100,13 +100,18 @@ namespace img2chr
                 imageLabel->setPixmap(QPixmap::fromImage(image));
 
                 conversions.clear();
-                for(int i = 0; i < sourcePalette->count(); i++)
+                while(QLayoutItem* child = sourcePalette->takeAt(0))
                 {
-                    sourcePalette->itemAt(i)->widget()->close();
-                    destPalette->itemAt(i)->widget()->close();
-                    conversionFields->itemAt(i)->widget()->close();
+                    delete child;
                 }
-
+                while(QLayoutItem* child = destPalette->takeAt(0))
+                {
+                    delete child;
+                }
+                while(QLayoutItem* child = conversionFields->takeAt(0))
+                {
+                    delete child;
+                }
                 for(int i = 0; i < image.colorCount(); i++)
                 {
                     QLabel* label = new QLabel();
@@ -123,12 +128,12 @@ namespace img2chr
                     label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
                     label->setAutoFillBackground(true);
                     destPalette->addWidget(label);
-                    conversions.append(i % 4);
 
                     QLineEdit* edit = new QLineEdit(tr("%1").arg(i % 4));
                     edit->setMinimumWidth(16);
                     edit->setMaximumWidth(16);
                     edit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+                    conversions.append(i % 4);
                     conversionFields->addWidget(edit);
                     connect(edit, SIGNAL(textChanged(const QString&)), this, SLOT(conversionChanged(const QString&)));
                 }
