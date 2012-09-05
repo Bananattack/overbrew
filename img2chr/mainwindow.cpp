@@ -6,8 +6,14 @@ namespace img2chr
 {
     MainWindow::MainWindow()
     {
+        resize(640, 640);
+
+        scroll = new QScrollArea();
+        scroll->setWidgetResizable(true);
+        setCentralWidget(scroll);
+
         editor = new EditorWidget();
-        setCentralWidget(editor);
+        scroll->setWidget(editor);
 
         statusBar()->showMessage(tr("img2chr - by Overkill."), 2000);
         statusBar()->setStyleSheet(
@@ -62,7 +68,7 @@ namespace img2chr
     {
         delete editor;
         editor = new EditorWidget();
-        setCentralWidget(editor);
+        scroll->setWidget(editor);
         setCurrentFile(QString());
     }
 
@@ -117,7 +123,7 @@ namespace img2chr
     {
         delete editor;
         editor = new EditorWidget();
-        setCentralWidget(editor);
+        scroll->setWidget(editor);
         setCurrentFile(filename);
     }
 
@@ -177,7 +183,7 @@ namespace img2chr
         QSettings settings;
         QStringList recentFiles(settings.value("recentFiles").toStringList());
         int recentCount = recentFiles.size() > MaxRecentCount ? MaxRecentCount : recentFiles.size();
-        for(int i = 0; i < recentCount; ++i)
+        for(int i = 0, end = recentCount; i != end; ++i)
         {
             recentFileActions[i]->setText(tr("&%1. %2")
                 .arg(i + 1)
@@ -187,7 +193,7 @@ namespace img2chr
             recentFileActions[i]->setStatusTip(recentFiles[i]);
             recentFileActions[i]->setDisabled(false);
         }
-        for(int i = recentCount; i < MaxRecentCount; ++i)
+        for(int i = recentCount, end = MaxRecentCount; i != end; ++i)
         {
             recentFileActions[i]->setText(tr("&%1.").arg(i + 1));
             recentFileActions[i]->setDisabled(true);

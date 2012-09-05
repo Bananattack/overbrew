@@ -8,15 +8,27 @@ namespace img2chr
     class EditorWidget : public QWidget
     {
         Q_OBJECT
+        private:
+            static const int TILE_WIDTH = 8;
+            static const int TILE_HEIGHT = 8;
+
+            static QVector<int> orderedPalette(const QImage& source);
+            static QImage stripPadding(const QImage& source);
+
         public:
             EditorWidget();
 
         private slots:
             void browse();
-            void toggledPadding(int state);
+            void toggledPadding(bool checked);
             void conversionChanged(const QString& text);
 
         private:
+            QRgb getPaletteColor(int i);
+            void autoFillConversions();
+            void calculatePalette();
+            void calculatePreview();
+
             QPushButton* imageBrowseButton;
             QRadioButton* compressionNone;
             QRadioButton* compressionRLE;
@@ -24,10 +36,12 @@ namespace img2chr
 
             QLabel* imageFilenameLabel;
             QLabel* sourceColorsLabel;
-            QLabel* destColorsLabel;
             QLabel* tileCountLabel;
+            QLabel* paletteHelpLabel;
+            QLabel* tilesLabel;
+            QLabel* previewHelpLabel;
+
             QLabel* imageLabel;
-            QLabel* previewTileCountLabel;
             QLabel* previewImageLabel;
 
             QHBoxLayout* sourcePalette;
@@ -35,11 +49,9 @@ namespace img2chr
             QHBoxLayout* conversionFields;
             QList<int> conversions;
 
+            bool padding;
             QImage image;
-
-            QRgb getPaletteColor(int i);
-            void calculatePalette();
-            void calculatePreview();
+            QImage preview;
     };
 }
 

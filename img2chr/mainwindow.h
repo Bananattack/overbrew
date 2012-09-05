@@ -46,6 +46,7 @@ namespace img2chr
 
             QString currentFile;
 
+            QScrollArea* scroll;
             EditorWidget* editor;
     };
 }
