@@ -42,13 +42,13 @@ namespace img2chr
         QImage result(QSize(columns * TILE_WIDTH, rows * TILE_HEIGHT), QImage::Format_Indexed8);
         result.setColorTable(source.colorTable());
 
-        for(int r = 0, rend = rows; r != rend; ++r)
+        for(int r = 0; r != rows; ++r)
         {
-            for(int c = 0, cend = columns; c != cend; ++c)
+            for(int c = 0; c != columns; ++c)
             {
-                for(int y = 0, yend = TILE_HEIGHT; y != yend; ++y)
+                for(int y = 0; y != TILE_HEIGHT; ++y)
                 {
-                    for(int x = 0, xend = TILE_WIDTH; x != xend; ++x)
+                    for(int x = 0; x != TILE_WIDTH; ++x)
                     {
                         result.setPixel(
                             c * TILE_WIDTH + x,
@@ -198,88 +198,260 @@ namespace img2chr
                 this,
                 tr("Import Image"),
                 QString(),
-                tr("Images (*.png *.gif *.bmp);;Tilesets (*.chr);;All Files (*.*)")
+                tr(
+                    "Character Sets/Images (*.chr *.png *.gif *.bmp)"
+                    ";;Images (*.png *.gif *.bmp)"
+                    ";;Character Sets (*.chr)"
+                    ";;All Files (*.*)"
+                )
             )
         );
         if(!filename.isEmpty())
         {
-            image = QImage(filename);
-            if(!image.isNull())
-            {
-                image = image.convertToFormat(QImage::Format_RGB32, Qt::AvoidDither | Qt::ThresholdDither | Qt::ThresholdAlphaDither);
-                image = image.convertToFormat(QImage::Format_Indexed8, Qt::AvoidDither | Qt::ThresholdDither | Qt::ThresholdAlphaDither);
-                sourceColorsLabel->setText(tr("Source Colors: %1").arg(image.colorCount()));
-                imageFilenameLabel->setText(tr("<b>%1</b>").arg(QFileInfo(filename).fileName()));
-                imageLabel->setPixmap(QPixmap::fromImage(image));
-
-                conversions.clear();
-                while(QLayoutItem* child = sourcePalette->takeAt(0))
-                {
-                    delete child->widget();
-                    delete child;
-                }
-                while(QLayoutItem* child = destPalette->takeAt(0))
-                {
-                    delete child->widget();
-                    delete child;
-                }
-                while(QLayoutItem* child = conversionFields->takeAt(0))
-                {
-                    delete child->widget();
-                    delete child;
-                }
-                for(int i = 0, end = image.colorCount(); i != end; ++i)
-                {
-                    if(QLabel* label = new QLabel())
-                    {
-                        sourcePalette->addWidget(label);
-
-                        label->setMinimumWidth(16);
-                        label->setMinimumHeight(16);
-                        label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-                        label->setPalette(QPalette(QColor(image.color(i))));
-                        label->setAutoFillBackground(true);
-                    }
-                    if(QLabel* label = new QLabel())
-                    {
-                        destPalette->addWidget(label);
-
-                        label->setMinimumWidth(16);
-                        label->setMinimumHeight(16);
-                        label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-                        label->setAutoFillBackground(true);
-                    }
-                    if(QLineEdit* edit = new QLineEdit(tr("%1").arg(0)))
-                    {
-                        conversionFields->addWidget(edit);
-
-                        edit->setValidator(new QIntValidator());
-                        edit->setMinimumWidth(16);
-                        edit->setMaximumWidth(16);
-                        edit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
-
-                        connect(edit, SIGNAL(textChanged(const QString&)), this, SLOT(conversionChanged(const QString&)));
-                    }
-                    conversions.append(0);
-                }
-
-                autoFillConversions();
-                calculatePalette();
-                calculatePreview();
-            }
+            readFile(filename);
         }
     }
 
     void EditorWidget::toggledPadding(bool checked)
     {
-        padding = checked;
-        autoFillConversions();
-        calculatePalette();
-        calculatePreview();
+        if(!loading)
+        {
+            padding = checked;
+            autoFillConversions();
+            calculatePalette();
+            calculatePreview();
+        }
     }
 
     void EditorWidget::conversionChanged(const QString& text)
     {
+        calculatePalette();
+        calculatePreview();
+    }
+
+    bool EditorWidget::readFile(const QString& filename)
+    {
+        QString suffix(QFileInfo(filename).suffix());
+        bool success = false;
+
+        loading = true;
+
+        if(suffix == "chr")
+        {
+            success = readCHR(filename);
+            if(success)
+            {
+                setupImage(filename);
+            }
+        }
+        else if(suffix == "png" || suffix == "gif" || suffix == "bmp")
+        {
+            success = readImage(filename);
+        }
+        else
+        {
+            QMessageBox::critical(this->parentWidget(), tr("Import Failed"), tr("'%1' has unrecognized file extension.").arg(filename));
+        }        
+
+        if(success)
+        {
+            setupImage(filename);
+        }
+        loading = false;
+
+        return success;
+    }
+
+    bool EditorWidget::readCHR(const QString &filename)
+    {
+        QFile file(filename);
+        if(!file.open(QIODevice::ReadOnly))
+        {
+            QMessageBox::critical(this->parentWidget(), tr("Import Failed"), tr("'%1' could not be imported as a CHR.").arg(filename));
+            return false;
+        }
+
+        int tiles = file.size() / 16;
+        if(tiles == 0)
+        {
+            QMessageBox::critical(this->parentWidget(), tr("Import Failed"), tr("'%1' has no tiles! (File size is %2 byte(s))").arg(filename).arg(file.size()));
+            return false;
+        }
+
+        // Try to fit this in a nice rectangular region, so it's easier to view.
+        int columns = 0;
+        int rows = 0;
+        for(int i = 16; i != 1; i /= 2)
+        {
+            if(tiles % i == 0)
+            {
+                if(i >= 8)
+                {
+                    columns = i;
+                    rows = tiles / i;
+                }
+                else
+                {
+                    rows = i;
+                    columns = tiles / i;
+                }
+                break;
+            }
+        }
+        if(columns == 0)
+        {
+            columns = tiles;
+            rows = 1;
+        }
+
+        qDebug() << "tiles " << tiles << " rows " << rows << " columns " << columns;
+
+        image = QImage(columns * 8, rows * 8, QImage::Format_Indexed8);
+        image.setColorCount(4);
+        for(int i = 0; i != 4; ++i)
+        {
+            image.setColor(i, getPaletteColor(i));
+        }
+        image.fill(0);
+
+        QByteArray bytes(file.read(file.size()));
+        for(int r = 0; r != rows; ++r)
+        {
+            for(int c = 0; c != columns; ++c)
+            {
+                for(int j = 0; j != 8; ++j)
+                {
+                    int index = ((r * columns + c) * 8 + j) * 2;
+                    unsigned char low = bytes[index];
+                    unsigned char high = bytes[index + 1];
+                    for(int i = 0; i != 8; ++i)
+                    {
+                        image.setPixel(
+                            c * 8 + i,
+                            r * 8 + j,
+                            ((high & (1 << (7 - i))) ? 2 : 0) | ((low & (1 << (7 - i))) ? 1 : 0)
+                        );
+                    }
+                }
+            }
+        }
+
+        padding = false;
+        paddingOption->setChecked(false);
+
+        return true;
+    }
+
+    bool EditorWidget::readImage(const QString &filename)
+    {
+        image = QImage(filename);
+        if(!image.isNull())
+        {
+            image = image.convertToFormat(QImage::Format_RGB32, Qt::AvoidDither | Qt::ThresholdDither | Qt::ThresholdAlphaDither);
+            image = image.convertToFormat(QImage::Format_Indexed8, Qt::AvoidDither | Qt::ThresholdDither | Qt::ThresholdAlphaDither);
+            return true;
+        }
+        QMessageBox::critical(this->parentWidget(), tr("Import Failed"), tr("'%1' could not be imported as an image.").arg(filename));
+        return false;
+    }
+
+    bool EditorWidget::writeCHR(const QString& filename)
+    {
+        QFile file(filename);
+        if(!file.open(QIODevice::WriteOnly))
+        {
+            QMessageBox::critical(this->parentWidget(), tr("Save Failed"), tr("Failed to open '%1' for writing").arg(filename));
+            return false;
+        }
+
+        if(compressionRLE->isChecked())
+        {
+            QMessageBox::warning(this->parentWidget(), tr("Notice"), tr("RLE isn't implemented yet. Saving without compression."));
+        }
+
+        QByteArray bytes;
+        for(int y = 0, h = preview.height(); y != h; y += 8)
+        {
+            for(int x = 0, w = preview.width(); x != w; x += 8)
+            {
+                for(int j = 0; j != 8; ++j)
+                {
+                    unsigned char low = 0;
+                    unsigned char high = 0;
+                    for(int i = 0; i != 8; ++i)
+                    {
+                        unsigned int color = conversions[preview.pixelIndex(x + i, y + j)];
+                        low = (low << 1) | (color & 0x1);
+                        high = (high << 1) | ((color & 0x2) >> 1);
+                    }
+                    bytes.append(low);
+                    bytes.append(high);
+                }
+            }
+        }
+        file.write(bytes);
+        file.close();
+        return true;
+    }
+
+    void EditorWidget::setupImage(const QString& filename)
+    {
+        sourceColorsLabel->setText(tr("Source Colors: %1").arg(image.colorCount()));
+        imageFilenameLabel->setText(tr("<b>%1</b>").arg(QFileInfo(filename).fileName()));
+        imageLabel->setPixmap(QPixmap::fromImage(image));
+
+        conversions.clear();
+        while(QLayoutItem* child = sourcePalette->takeAt(0))
+        {
+            delete child->widget();
+            delete child;
+        }
+        while(QLayoutItem* child = destPalette->takeAt(0))
+        {
+            delete child->widget();
+            delete child;
+        }
+        while(QLayoutItem* child = conversionFields->takeAt(0))
+        {
+            delete child->widget();
+            delete child;
+        }
+        for(int i = 0, end = image.colorCount(); i != end; ++i)
+        {
+            if(QLabel* label = new QLabel())
+            {
+                sourcePalette->addWidget(label);
+
+                label->setMinimumWidth(16);
+                label->setMinimumHeight(16);
+                label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+                label->setPalette(QPalette(QColor(image.color(i))));
+                label->setAutoFillBackground(true);
+            }
+            if(QLabel* label = new QLabel())
+            {
+                destPalette->addWidget(label);
+
+                label->setMinimumWidth(16);
+                label->setMinimumHeight(16);
+                label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+                label->setAutoFillBackground(true);
+            }
+            if(QLineEdit* edit = new QLineEdit(tr("%1").arg(0)))
+            {
+                conversionFields->addWidget(edit);
+
+                edit->setValidator(new QIntValidator());
+                edit->setMinimumWidth(16);
+                edit->setMaximumWidth(16);
+                edit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+
+                connect(edit, SIGNAL(textChanged(const QString&)), this, SLOT(conversionChanged(const QString&)));
+            }
+            conversions.append(0);
+        }
+
+        autoFillConversions();
         calculatePalette();
         calculatePreview();
     }

@@ -23,7 +23,14 @@ namespace img2chr
             void toggledPadding(bool checked);
             void conversionChanged(const QString& text);
 
+        public:
+            bool readFile(const QString& filename);
+            bool readCHR(const QString& filename);
+            bool readImage(const QString& filename);
+            bool writeCHR(const QString& filename);
+
         private:
+            void setupImage(const QString& filename);
             QRgb getPaletteColor(int i);
             void autoFillConversions();
             void calculatePalette();
@@ -52,6 +59,7 @@ namespace img2chr
             bool padding;
             QImage image;
             QImage preview;
+            bool loading;
     };
 }
 

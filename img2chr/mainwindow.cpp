@@ -74,7 +74,14 @@ namespace img2chr
 
     void MainWindow::openFile()
     {
-        QString filename(QFileDialog::getOpenFileName(this));
+        QString filename(
+            QFileDialog::getOpenFileName(
+                this,
+                tr("Open Character Set"),
+                QString(),
+                tr("Tilesets (*.chr);;")
+            )
+        );
         if(!filename.isEmpty())
         {
             readFile(filename);
@@ -83,12 +90,30 @@ namespace img2chr
 
     void MainWindow::saveFile()
     {
-        statusBar()->showMessage(tr("File saved."), 2000);
+        if(currentFile.isEmpty())
+        {
+            saveFileAs();
+        }
+        else
+        {
+            writeFile(currentFile);
+        }
     }
 
     void MainWindow::saveFileAs()
     {
-        statusBar()->showMessage(tr("File saved."), 2000);
+        QString filename(
+            QFileDialog::getSaveFileName(
+                this,
+                tr("Save Character Set"),
+                QString(),
+                tr("Character Sets (*.chr);;")
+            )
+        );
+        if(!filename.isEmpty())
+        {
+            writeFile(filename);
+        }
     }
 
     void MainWindow::openRecentFile()
@@ -125,10 +150,16 @@ namespace img2chr
         editor = new EditorWidget();
         scroll->setWidget(editor);
         setCurrentFile(filename);
+        editor->readFile(filename);
     }
 
     void MainWindow::writeFile(const QString& filename)
     {
+        if(editor->writeCHR(filename))
+        {
+            setCurrentFile(filename);
+            statusBar()->showMessage(tr("File saved as %1.").arg(filename), 2000);
+        }
     }
 
     void MainWindow::setCurrentFile(const QString& filename)
