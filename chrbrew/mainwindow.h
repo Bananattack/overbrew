@@ -4,8 +4,10 @@
 #include <QtGui>
 #include "editorwidget.h"
 
-namespace img2chr
+namespace chrbrew
 {
+    const char* const AppName = "chrbrew";
+
     class MainWindow : public QMainWindow
     {
         Q_OBJECT

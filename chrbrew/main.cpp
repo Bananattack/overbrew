@@ -7,9 +7,9 @@ int main(int argc, char** argv)
 {
     QApplication app(argc, argv);
     app.setOrganizationName("Overkill");
-    app.setApplicationName("img2chr");
+    app.setApplicationName(chrbrew::AppName);
 
-    img2chr::MainWindow win;
+    chrbrew::MainWindow win;
     win.show();
     return app.exec();
 }

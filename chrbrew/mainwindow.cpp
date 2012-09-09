@@ -2,7 +2,7 @@
 
 #include "mainwindow.h"
 
-namespace img2chr
+namespace chrbrew
 {
     MainWindow::MainWindow()
     {
@@ -136,11 +136,11 @@ namespace img2chr
 
     void MainWindow::about()
     {
-        QMessageBox::about(this, tr("img2chr"), tr(
-                "<p><strong>img2chr</b></strong> &ndash; <em>by Andrew G. Crowell (Overkill)</em>.</p>"
+        QMessageBox::about(this, tr("%1").arg(AppName), tr(
+                "<p><strong>%1</b></strong> &ndash; <em>by Andrew G. Crowell (Overkill)</em>.</p>"
                 "<p>A tool for converting images into raw tile/character sets.</p>"
                 "<p><a href='https://github.com/Bananattack/img2chr/'>https://github.com/Bananattack/img2chr/</a></p>"
-            )
+            ).arg(AppName)
         );
     }
 

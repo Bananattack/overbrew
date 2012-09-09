@@ -2,7 +2,7 @@
 
 #include "editorwidget.h"
 
-namespace img2chr
+namespace chrbrew
 {
     namespace
     {

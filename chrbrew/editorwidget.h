@@ -3,7 +3,7 @@
 
 #include <QtGui>
 
-namespace img2chr
+namespace chrbrew
 {
     class EditorWidget : public QWidget
     {
