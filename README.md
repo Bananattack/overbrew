@@ -5,9 +5,21 @@ overbrew
 
 A collection of primitive editor/converter tools for making assets used with homebrew ROM development, written in C++ and Qt.
 
+These are going to be mashed together pretty haphazardly. The goal is low-effort UI that just gets the job done.
+
 Contents
 --------
 
 Here are the tools in this collection so far:
 
-* chrbrew: A tool for converting image files into binary tile/character sets.
+* chrbrew: Convert image files into binary tile/character sets.
+* palbrew: Make 15-bit RGB color palettes.
+* spritebrew: Create metasprites, comprised of several hardware sprite parts, which reference palette and chr data.
+* tilebrew: Create tileset of metatiles, comprised of 2x2 blocks of hardware tiles, which reference palette and chr data.
+* textbrew: A tool for encoding text dialog into tile data that can be printed to screen.
+* databrew: A tool for creating tables of data, which can be stored as binary blobs.
+* worldbrew: Stitching the assets together: a tilemap, a tileset, some sprites, probably other stuff. Output some program code that will embed all the assets.
+
+SOME OTHER IDEAS MAYBE
+
+* Use tiled for making maps with the metatiles, single tile layer. Maybe object layers for metadata, like entity placement.
