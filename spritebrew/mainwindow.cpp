@@ -2,7 +2,7 @@
 
 #include "mainwindow.h"
 
-namespace chrbrew
+namespace spritebrew
 {
     MainWindow::MainWindow()
     {
@@ -77,9 +77,9 @@ namespace chrbrew
         QString filename(
             QFileDialog::getOpenFileName(
                 this,
-                tr("Open Character Set"),
+                tr("Open Sprite Project"),
                 QString(),
-                tr("Tilesets (*.chr);;")
+                tr("Sprite Project (*.spr-proj]);;")
             )
         );
         if(!filename.isEmpty())
@@ -105,9 +105,9 @@ namespace chrbrew
         QString filename(
             QFileDialog::getSaveFileName(
                 this,
-                tr("Save Character Set"),
+                tr("Save Spritebrew Project"),
                 QString(),
-                tr("Character Sets (*.chr);;")
+                tr("Spritebrew Project (*.sprbrew);;")
             )
         );
         if(!filename.isEmpty())
@@ -150,12 +150,12 @@ namespace chrbrew
         editor = new EditorWidget();
         scroll->setWidget(editor);
         setCurrentFile(filename);
-        editor->readFile(filename);
+        //editor->readFile(filename);
     }
 
     void MainWindow::writeFile(const QString& filename)
     {
-        if(editor->writeCHR(filename))
+        //if(editor->writeCHR(filename))
         {
             setCurrentFile(filename);
             statusBar()->showMessage(tr("File saved as %1.").arg(filename), 2000);
@@ -167,7 +167,7 @@ namespace chrbrew
         setWindowModified(false);
         if(filename.isEmpty())
         {
-            setWindowFilePath("untitled.chr");
+            setWindowFilePath("untitled.sprbrew");
         }
         else
         {

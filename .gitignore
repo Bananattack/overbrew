@@ -1,5 +1,5 @@
-img2chr/debug
-img2chr/release
+*brew/debug
+*brew/release
 Makefile*
 *.o
 *.qm
@@ -8,7 +8,7 @@ moc_*.cpp
 ui_*.h
 *.pro.user*
 qrc_*
-img2chr.exe
+*.exe
 *.dll
 *.obj
 *.a
