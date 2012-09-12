@@ -4,33 +4,20 @@
 
 namespace chrbrew
 {
-    namespace
-    {
-        struct PaletteEntryComparator
-        {
-            PaletteEntryComparator(QVector<QRgb> colors)
-                : colors(colors)
-            {
-            }
-
-            bool operator()(int a, int b)
-            {
-                return qGray(colors[a]) < qGray(colors[b]);
-            }
-
-            QVector<QRgb> colors;
-        };
-    }
-
     QVector<int> EditorWidget::orderedPalette(const QImage& source)
     {
-        QVector<QRgb> colors = source.colorTable();
+        auto colors = source.colorTable();
         QVector<int> palette(colors.count());
         for(int i = 0, end = colors.count(); i != end; ++i)
         {
             palette[i] = i;
         }
-        qStableSort(palette.begin(), palette.end(), PaletteEntryComparator(colors));
+        qStableSort(palette.begin(), palette.end(),
+            [&](int a, int b)
+            {
+                return qGray(colors[a]) < qGray(colors[b]);
+            }
+        );
         return palette;
     }
 
@@ -66,21 +53,20 @@ namespace chrbrew
     }
 
     EditorWidget::EditorWidget()
-        : padding(false)
     {
-        QVBoxLayout* mainLayout(new QVBoxLayout());
+        auto mainLayout = new QVBoxLayout();
         mainLayout->setAlignment(Qt::AlignTop);
         setLayout(mainLayout);
 
-        if(QGroupBox* group = new QGroupBox(tr("Image")))
+        if(auto group = new QGroupBox(tr("Image")))
         {
             mainLayout->addWidget(group);
 
-            QVBoxLayout* groupLayout(new QVBoxLayout());
+            auto groupLayout = new QVBoxLayout();
             groupLayout->setAlignment(Qt::AlignCenter | Qt::AlignTop);
             group->setLayout(groupLayout);
 
-            QHBoxLayout* browseLayout(new QHBoxLayout());
+            auto browseLayout = new QHBoxLayout();
             browseLayout->setAlignment(Qt::AlignLeft);
             groupLayout->addLayout(browseLayout);
 
@@ -95,11 +81,11 @@ namespace chrbrew
             imageLabel = new QLabel();
             groupLayout->addWidget(imageLabel);
         }
-        if(QGroupBox* group = new QGroupBox(tr("Palette")))
+        if(auto group = new QGroupBox(tr("Palette")))
         {
             mainLayout->addWidget(group);
 
-            QVBoxLayout* groupLayout(new QVBoxLayout());
+            auto groupLayout = new QVBoxLayout();
             groupLayout->setAlignment(Qt::AlignCenter | Qt::AlignTop);
             group->setLayout(groupLayout);
 
@@ -126,14 +112,14 @@ namespace chrbrew
             groupLayout->addWidget(paletteHelpLabel);
 
         }
-        if(QHBoxLayout* rowLayout = new QHBoxLayout())
+        if(auto rowLayout = new QHBoxLayout())
         {
             mainLayout->addLayout(rowLayout);
-            if(QGroupBox* group = new QGroupBox(tr("Info")))
+            if(auto group = new QGroupBox(tr("Info")))
             {
                 rowLayout->addWidget(group);
 
-                QVBoxLayout* groupLayout(new QVBoxLayout());
+                auto groupLayout = new QVBoxLayout();
                 group->setLayout(groupLayout);
 
                 sourceColorsLabel = new QLabel(tr("Source Colors: 0"));
@@ -142,11 +128,11 @@ namespace chrbrew
                 tilesLabel = new QLabel(tr("Output Tiles: 0"));
                 groupLayout->addWidget(tilesLabel);
             }
-            if(QGroupBox* group = new QGroupBox(tr("Output Compression")))
+            if(auto group = new QGroupBox(tr("Output Compression")))
             {
                 rowLayout->addWidget(group);
 
-                QVBoxLayout* groupLayout(new QVBoxLayout());
+                auto groupLayout = new QVBoxLayout();
                 group->setLayout(groupLayout);
 
                 compressionNone = new QRadioButton(tr("None"));
@@ -156,11 +142,11 @@ namespace chrbrew
                 compressionRLE = new QRadioButton(tr("RLE (Run-Length Encoding)"));
                 groupLayout->addWidget(compressionRLE);
             }
-            if(QGroupBox* group = new QGroupBox(tr("Options")))
+            if(auto group = new QGroupBox(tr("Options")))
             {
                 rowLayout->addWidget(group);
 
-                QHBoxLayout* groupLayout(new QHBoxLayout());
+                auto groupLayout = new QHBoxLayout();
                 group->setLayout(groupLayout);
 
                 paddingOption = new QCheckBox(tr("Remove Padding"));
@@ -169,11 +155,11 @@ namespace chrbrew
                 groupLayout->addWidget(paddingOption);
             }
         }
-        if(QGroupBox* group = new QGroupBox(tr("Preview")))
+        if(auto group = new QGroupBox(tr("Preview")))
         {
             mainLayout->addWidget(group);
 
-            QVBoxLayout* groupLayout(new QVBoxLayout());
+            auto groupLayout = new QVBoxLayout();
             groupLayout->setAlignment(Qt::AlignCenter | Qt::AlignTop);
             group->setLayout(groupLayout);
 
@@ -193,17 +179,15 @@ namespace chrbrew
 
     void EditorWidget::browse()
     {
-        QString filename(
-            QFileDialog::getOpenFileName(
-                this,
-                tr("Import Image"),
-                QString(),
-                tr(
-                    "Character Sets/Images (*.chr *.png *.gif *.bmp)"
-                    ";;Images (*.png *.gif *.bmp)"
-                    ";;Character Sets (*.chr)"
-                    ";;All Files (*.*)"
-                )
+        auto filename = QFileDialog::getOpenFileName(
+            this,
+            tr("Import Image"),
+            QString(),
+            tr(
+                "Character Sets/Images (*.chr *.png *.gif *.bmp)"
+                ";;Images (*.png *.gif *.bmp)"
+                ";;Character Sets (*.chr)"
+                ";;All Files (*.*)"
             )
         );
         if(!filename.isEmpty())
@@ -231,7 +215,7 @@ namespace chrbrew
 
     bool EditorWidget::readFile(const QString& filename)
     {
-        QString suffix(QFileInfo(filename).suffix());
+        auto suffix = QFileInfo(filename).suffix();
         bool success = false;
 
         loading = true;
@@ -401,24 +385,24 @@ namespace chrbrew
         imageLabel->setPixmap(QPixmap::fromImage(image));
 
         conversions.clear();
-        while(QLayoutItem* child = sourcePalette->takeAt(0))
+        while(auto child = sourcePalette->takeAt(0))
         {
             delete child->widget();
             delete child;
         }
-        while(QLayoutItem* child = destPalette->takeAt(0))
+        while(auto child = destPalette->takeAt(0))
         {
             delete child->widget();
             delete child;
         }
-        while(QLayoutItem* child = conversionFields->takeAt(0))
+        while(auto child = conversionFields->takeAt(0))
         {
             delete child->widget();
             delete child;
         }
         for(int i = 0, end = image.colorCount(); i != end; ++i)
         {
-            if(QLabel* label = new QLabel())
+            if(auto label = new QLabel())
             {
                 sourcePalette->addWidget(label);
 
@@ -428,7 +412,7 @@ namespace chrbrew
                 label->setPalette(QPalette(QColor(image.color(i))));
                 label->setAutoFillBackground(true);
             }
-            if(QLabel* label = new QLabel())
+            if(auto label = new QLabel())
             {
                 destPalette->addWidget(label);
 
@@ -437,7 +421,7 @@ namespace chrbrew
                 label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
                 label->setAutoFillBackground(true);
             }
-            if(QLineEdit* edit = new QLineEdit(tr("%1").arg(0)))
+            if(auto edit = new QLineEdit(tr("%1").arg(0)))
             {
                 conversionFields->addWidget(edit);
 
@@ -471,18 +455,18 @@ namespace chrbrew
     void EditorWidget::autoFillConversions()
     {
         // Remove padding color.
-        QVector<int> palette(orderedPalette(image));
+        auto palette = orderedPalette(image);
         if(padding && image.width() && image.height())
         {
             int colorIndex = image.pixelIndex(0, 0);
-            QLineEdit* edit(qobject_cast<QLineEdit*>(conversionFields->itemAt(colorIndex)->widget()));
+            auto edit = qobject_cast<QLineEdit*>(conversionFields->itemAt(colorIndex)->widget());
             edit->setText(tr("%1").arg(0));
             palette.remove(palette.indexOf(colorIndex));
             conversions[colorIndex] = 0;
         }
 
         // Remove 'transparent' color (fully-saturated colors).
-        QVector<int>::iterator it(palette.begin());
+        auto it = palette.begin();
         while(it != palette.end())
         {
             int colorIndex = *it;
@@ -497,7 +481,7 @@ namespace chrbrew
                 && !(r == 0xFF && g == 0xFF && b == 0xFF))
             {
                 it = palette.erase(it);
-                QLineEdit* edit(qobject_cast<QLineEdit*>(conversionFields->itemAt(colorIndex)->widget()));
+                auto edit = qobject_cast<QLineEdit*>(conversionFields->itemAt(colorIndex)->widget());
                 edit->setText(tr("%1").arg(0));
                 conversions[colorIndex] = 0;
             }
@@ -512,7 +496,7 @@ namespace chrbrew
             int conversion = i * 4 / end;
             int colorIndex = palette[i];
 
-            QLineEdit* edit(qobject_cast<QLineEdit*>(conversionFields->itemAt(colorIndex)->widget()));
+            auto edit = qobject_cast<QLineEdit*>(conversionFields->itemAt(colorIndex)->widget());
             edit->setText(tr("%1").arg(conversion));
             conversions[colorIndex] = conversion;
         }
@@ -520,7 +504,7 @@ namespace chrbrew
         if(palette.count())
         {
             int colorIndex = palette[palette.count() - 1];
-            QLineEdit* edit(qobject_cast<QLineEdit*>(conversionFields->itemAt(colorIndex)->widget()));
+            auto edit = qobject_cast<QLineEdit*>(conversionFields->itemAt(colorIndex)->widget());
             edit->setText(tr("%1").arg(3));
             conversions[colorIndex] = 3;
         }
@@ -530,7 +514,7 @@ namespace chrbrew
     {
         for(int i = 0, end = conversionFields->count(); i != end; ++i)
         {
-            QLineEdit* edit(qobject_cast<QLineEdit*>(conversionFields->itemAt(i)->widget()));
+            auto edit = qobject_cast<QLineEdit*>(conversionFields->itemAt(i)->widget());
             bool success;
             int index(edit->text().toInt(&success, 10));
             if(success)

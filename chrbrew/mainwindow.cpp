@@ -40,7 +40,7 @@ namespace chrbrew
         createSeparator(fileMenu);
         for(int i = 0; i < MaxRecentCount; ++i)
         {
-            QAction* action(createAction(fileMenu, QKeySequence(Qt::ALT + Qt::Key_1 + i)));
+            auto action = createAction(fileMenu, QKeySequence(Qt::ALT + Qt::Key_1 + i));
             action->setDisabled(true);
             recentFileActions[i] = action;
             connect(action, SIGNAL(triggered()), this, SLOT(openRecentFile()));
@@ -74,13 +74,11 @@ namespace chrbrew
 
     void MainWindow::openFile()
     {
-        QString filename(
-            QFileDialog::getOpenFileName(
-                this,
-                tr("Open Character Set"),
-                QString(),
-                tr("Tilesets (*.chr);;")
-            )
+        auto filename = QFileDialog::getOpenFileName(
+            this,
+            tr("Open Character Set"),
+            QString(),
+            tr("Tilesets (*.chr);;")
         );
         if(!filename.isEmpty())
         {
@@ -102,13 +100,11 @@ namespace chrbrew
 
     void MainWindow::saveFileAs()
     {
-        QString filename(
-            QFileDialog::getSaveFileName(
-                this,
-                tr("Save Character Set"),
-                QString(),
-                tr("Character Sets (*.chr);;")
-            )
+        auto filename = QFileDialog::getSaveFileName(
+            this,
+            tr("Save Character Set"),
+            QString(),
+            tr("Character Sets (*.chr);;")
         );
         if(!filename.isEmpty())
         {
@@ -118,7 +114,7 @@ namespace chrbrew
 
     void MainWindow::openRecentFile()
     {
-        QAction* action(qobject_cast<QAction*>(sender()));
+        auto action = qobject_cast<QAction*>(sender());
         if(action)
         {
             readFile(action->data().toString());
@@ -128,7 +124,7 @@ namespace chrbrew
     void MainWindow::clearRecentFiles()
     {
         QSettings settings;
-        QStringList recentFiles(settings.value("recentFiles").toStringList());
+        auto recentFiles = settings.value("recentFiles").toStringList();
         recentFiles.clear();
         settings.setValue("recentFiles", recentFiles);
         updateRecentFiles();
@@ -195,7 +191,7 @@ namespace chrbrew
 
     QAction* MainWindow::createAction(QMenu* menu, const QKeySequence &shortcut)
     {
-        QAction* action(new QAction(this));
+        auto action = new QAction(this);
         menu->addAction(action);
         action->setShortcut(shortcut);
         return action;
@@ -203,7 +199,7 @@ namespace chrbrew
 
     QAction* MainWindow::createAction(QMenu* menu, const QString& text, const QString& description, const QKeySequence &shortcut)
     {
-        QAction* action(createAction(menu, shortcut));
+        auto action = createAction(menu, shortcut);
         action->setText(text);
         action->setStatusTip(description);
         return action;
@@ -212,7 +208,7 @@ namespace chrbrew
     void MainWindow::updateRecentFiles()
     {
         QSettings settings;
-        QStringList recentFiles(settings.value("recentFiles").toStringList());
+        auto recentFiles = settings.value("recentFiles").toStringList();
         int recentCount = recentFiles.size() > MaxRecentCount ? MaxRecentCount : recentFiles.size();
         for(int i = 0, end = recentCount; i != end; ++i)
         {
