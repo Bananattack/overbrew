@@ -6,19 +6,19 @@ namespace spritebrew
 {
     EditorWidget::EditorWidget()
     {
-        QVBoxLayout* mainLayout(new QVBoxLayout());
+        auto mainLayout = new QVBoxLayout();
         mainLayout->setAlignment(Qt::AlignTop);
         setLayout(mainLayout);
 
-        if(QGroupBox* group = new QGroupBox(tr("Character Set")))
+        if(auto group = new QGroupBox(tr("Character Set")))
         {
             mainLayout->addWidget(group);
 
-            QVBoxLayout* groupLayout(new QVBoxLayout());
+            auto groupLayout = new QVBoxLayout();
             groupLayout->setAlignment(Qt::AlignCenter | Qt::AlignTop);
             group->setLayout(groupLayout);
 
-            QHBoxLayout* browseLayout(new QHBoxLayout());
+            auto browseLayout = new QHBoxLayout();
             browseLayout->setAlignment(Qt::AlignLeft);
             groupLayout->addLayout(browseLayout);
 
@@ -33,26 +33,26 @@ namespace spritebrew
             imageLabel = new QLabel();
             groupLayout->addWidget(imageLabel);
         }
-        if(QHBoxLayout* rowLayout = new QHBoxLayout())
+        if(auto rowLayout = new QHBoxLayout())
         {
             mainLayout->addLayout(rowLayout);
-            if(QVBoxLayout* columnLayout = new QVBoxLayout())
+            if(auto columnLayout = new QVBoxLayout())
             {
                 rowLayout->addLayout(columnLayout);
-                if(QGroupBox* group = new QGroupBox(tr("Palettes")))
+                if(auto group = new QGroupBox(tr("Palettes")))
                 {
                     columnLayout->addWidget(group);
 
-                    QGridLayout* groupLayout(new QGridLayout());
+                    auto groupLayout = new QGridLayout();
                     groupLayout->setAlignment(Qt::AlignTop);
                     group->setLayout(groupLayout);
 
                     for(int i = 0; i != 8; ++i)
                     {
-                        QLabel* label = new QLabel(tr("Palette %1 is unused.").arg(i));
+                        auto label = new QLabel(tr("Palette %1 is unused.").arg(i));
                         groupLayout->addWidget(label, i, 0);
 
-                        QPushButton* button = new QPushButton(tr("&Import..."));
+                        auto button = new QPushButton(tr("&Import..."));
                         button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
                         button->setAutoDefault(true);
                         groupLayout->addWidget(button, i, 1);
@@ -62,11 +62,11 @@ namespace spritebrew
             if(QVBoxLayout* columnLayout = new QVBoxLayout())
             {
                 rowLayout->addLayout(columnLayout);
-                if(QGroupBox* group = new QGroupBox(tr("Parts")))
+                if(auto group = new QGroupBox(tr("Parts")))
                 {
                     columnLayout->addWidget(group);
 
-                    QGridLayout* groupLayout(new QGridLayout());
+                    auto groupLayout = new QGridLayout();
                     group->setLayout(groupLayout);
 
                     groupLayout->addWidget(new QLabel(tr("Total Used")), 0, 0);
@@ -79,11 +79,11 @@ namespace spritebrew
                     groupLayout->addWidget(new QPushButton(tr("Remove")), 2, 1);
                     groupLayout->addWidget(new QPushButton(tr("Move...")), 2, 2);
                 }
-                if(QGroupBox* group = new QGroupBox(tr("Part Properties")))
+                if(auto group = new QGroupBox(tr("Part Properties")))
                 {
                     columnLayout->addWidget(group);
 
-                    QGridLayout* groupLayout(new QGridLayout());
+                    auto groupLayout = new QGridLayout();
                     group->setLayout(groupLayout);
 
                     groupLayout->addWidget(new QLabel(tr("X")), 0, 0);
@@ -95,11 +95,11 @@ namespace spritebrew
                     groupLayout->addWidget(new QLabel(tr("Palette")), 1, 2);
                     groupLayout->addWidget(new QSpinBox(), 1, 3);
                 }
-                if(QGroupBox* group = new QGroupBox(tr("Part Attributes")))
+                if(auto group = new QGroupBox(tr("Part Attributes")))
                 {
                     columnLayout->addWidget(group);
 
-                    QVBoxLayout* groupLayout(new QVBoxLayout());
+                    auto groupLayout = new QVBoxLayout();
                     group->setLayout(groupLayout);
 
                     groupLayout->addWidget(new QCheckBox(tr("Horizontal Flip")));
@@ -108,11 +108,11 @@ namespace spritebrew
                 }
             }
         }
-        if(QGroupBox* group = new QGroupBox(tr("Preview")))
+        if(auto group = new QGroupBox(tr("Preview")))
         {
             mainLayout->addWidget(group);
 
-            QVBoxLayout* groupLayout(new QVBoxLayout());
+            auto groupLayout = new QVBoxLayout();
             groupLayout->setAlignment(Qt::AlignCenter | Qt::AlignTop);
             group->setLayout(groupLayout);
         }
@@ -121,20 +121,18 @@ namespace spritebrew
 
     void EditorWidget::browse()
     {
-        QString filename(
-            QFileDialog::getOpenFileName(
-                this,
-                tr("Import Character Set"),
-                QString(),
-                tr(
-                    ";;Character Sets (*.chr)"
-                    ";;All Files (*.*)"
-                )
+        auto filename = QFileDialog::getOpenFileName(
+            this,
+            tr("Import Character Set"),
+            QString(),
+            tr(
+                ";;Character Sets (*.chr)"
+                ";;All Files (*.*)"
             )
         );
         if(!filename.isEmpty())
         {
-            QString suffix(QFileInfo(filename).suffix());
+            auto suffix = QFileInfo(filename).suffix();
             if(suffix == "chr")
             {
                 if(readCHR(filename))
